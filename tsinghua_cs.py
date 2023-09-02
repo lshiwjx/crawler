@@ -1,5 +1,6 @@
 #!/usr/bin/python
 # -*- coding: UTF-8 -*-
+import os.path
 
 import xlwt
 from util import *
@@ -10,7 +11,9 @@ if __name__ == "__main__":
   university_value = "清华大学"
   college_value = "计算机科学与技术"
   # 创建表格与表头
-  excel_save_path = "/Users/mohuiyu/Desktop/teacher_info/" + university_value + "/" + college_value + ".xls"
+  save_dir = "./teacher_info/" + university_value + "/"
+  os.makedirs(save_dir, exist_ok=True)
+  excel_save_path = save_dir + college_value + ".xls"
   excel = xlwt.Workbook(encoding="utf-8")
   sheet = excel.add_sheet(college_value, cell_overwrite_ok=True)
   for i in range(len(CARED_CONTENT)):

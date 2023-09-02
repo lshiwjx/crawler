@@ -11,9 +11,9 @@ if __name__ == "__main__":
     university_value = "中科院自动化所"
     college_value = "无"
     # 创建表格与表头
-    excel_save_dir = "/home/lshi/Project/crawler/teacher_info/"
-    os.makedirs(excel_save_dir, exist_ok=True)
-    excel_save_path = excel_save_dir + university_value + "_" + college_value + ".xls"
+    save_dir = "./teacher_info/" + university_value + "/"
+    os.makedirs(save_dir, exist_ok=True)
+    excel_save_path = save_dir + college_value + ".xls"
     excel = xlwt.Workbook(encoding="utf-8")
     sheet = excel.add_sheet(college_value, cell_overwrite_ok=True)
     for i in range(len(CARED_CONTENT)):
