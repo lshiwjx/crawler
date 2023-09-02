@@ -26,6 +26,32 @@ class Handle(object):
         self._path_list = traverse_dir("./teacher_info")
         self._teacher_info = load_xls_data(self._path_list)
 
+    def GET(self):
+        try:
+            data = web.input()
+            if len(data) == 0:
+                return "hello, this is handle view"
+            signature = data.signature
+            timestamp = data.timestamp
+            nonce = data.nonce
+            echostr = data.echostr
+            token = "JustTest"
+
+            list = [token, timestamp, nonce]
+            list.sort()
+            sha1 = hashlib.sha1()
+            sha1.update(list[0].encode('utf-8'))
+            sha1.update(list[1].encode('utf-8'))
+            sha1.update(list[2].encode('utf-8'))
+            hashcode = sha1.hexdigest()
+            print("handle/GET func: hashcode, signature: ", hashcode, signature)
+            if hashcode == signature:
+                return echostr
+            else:
+                return ""
+        except Exception as Argument:
+            return Argument
+
     def POST(self):
         try:
             webData = web.data()
