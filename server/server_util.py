@@ -1,12 +1,8 @@
 import xlrd
 import glob
 import difflib
+import re
 from server_params import *
-
-kNoUniversity = 0
-kNoCollege = 1
-kNoTeacher = 2
-kInputError = 3
 
 
 def traverse_dir(path):
@@ -41,30 +37,30 @@ def load_xls_data(path_list):
 
 
 def key_match(query_key, key_list, cutoff=0.0):
-    matched_kyes = difflib.get_close_matches(query_key, key_list, cutoff=cutoff)
-    return matched_kyes
+    matched_keys = difflib.get_close_matches(query_key, key_list, cutoff=cutoff)
+    return matched_keys
 
 def search_based_on_query(query_key, teacher_info):
-    search_result = {}
-    # Format: "university，college，teacher_name", "*" can be used to represent all.
+    # Format: "mode, university，college，teacher_name", "*" can be used to represent all.
     try:
-        university_name, college_name, teacher_name = query_key.strip().split('，')
+        mode, university_name, college_name, search_key = re.split('、|，|,| ', query_key)
     except:
         return kInputError
     university_list = teacher_info.keys()
+    
     if '*' not in university_name:
         university_list = key_match(university_name, university_list, 0.2)
         if len(university_list) == 0:
             return kNoUniversity
-    else:
-        return kNoUniversity
+    if mode == kUniversityCollegeMajorMode and '*' in search_key:
+        return kNoMajor
 
     output_str = ''
-    if '*' in college_name and '*' in teacher_name:
+    if '*' in college_name and '*' in search_key:
         for university_name in university_list:
             output_str += university_name + '\n' + kUniversityUrl[university_name] + '\n' + '----------'
         return output_str
-    elif '*' not in college_name and '*' in teacher_name:
+    elif '*' not in college_name and '*' in search_key:
         for university_name in university_list:
             college = teacher_info[university_name]
             college_list = college.keys()
@@ -83,21 +79,48 @@ def search_based_on_query(query_key, teacher_info):
             if len(college_list) == 0:
                 return kNoCollege
         for college_candidate in college_list:
-            teacher = teacher_info[university_candidate][college_candidate]
-            teacher_list = teacher.keys()
-            if '*' not in teacher_name:
-                teacher_list = key_match(teacher_name, teacher_list, cutoff=0.6)
-                if len(teacher_list) == 0:
-                    return kNoTeacher
-            for teacher_candidate in teacher_list:
-                search_result[teacher_candidate] = \
-                        teacher_info[university_candidate][college_candidate][teacher_candidate]
+            if mode == kUniversityCollegeTeacherMode:
+                return search_teacher_name(university_candidate, college_candidate, search_key, teacher_info)
+            elif mode == kUniversityCollegeMajorMode:
+                return search_major_research(university_candidate, college_candidate, search_key, teacher_info)
+            else:
+                return kInputError
+                
+
+def search_teacher_name(university_candidate, college_candidate, search_key, teacher_info):
+    search_result = {}
+    teacher = teacher_info[university_candidate][college_candidate]
+    teacher_name_list = teacher.keys()
+    if '*' not in search_key:
+        teacher_name_list = key_match(search_key, teacher_name_list, cutoff=0.6)
+        if len(teacher_name_list) == 0:
+            return kNoTeacher
+    for teacher_name_candidate in teacher_name_list:
+        search_result[teacher_name_candidate] = \
+                teacher_info[university_candidate][college_candidate][teacher_name_candidate]
     return search_result
-    
+
+
+def search_major_research(university_candidate, college_candidate, search_key, teacher_info):
+    search_result = {}
+    teacher = teacher_info[university_candidate][college_candidate]
+    teacher_name_list = teacher.keys()
+    for teacher_name_candidate in teacher_name_list:
+        major_research = teacher_info[university_candidate][college_candidate][teacher_name_candidate][kMajorReaserch].strip()
+        major_research_list = re.split('、|，|,| ', major_research)
+        matched_major_research = key_match(search_key, major_research_list, cutoff=0.4)
+        if len(matched_major_research) > 0:
+            search_result[teacher_name_candidate] = \
+                    teacher_info[university_candidate][college_candidate][teacher_name_candidate]
+    if len(search_result) == 0:
+        search_result = kNoMajor
+    return search_result
+
+
 if __name__ == '__main__':
     path_list = traverse_dir("./teacher_info")
     teacher_info = load_xls_data(path_list)
-    query_key = "清华,*,王生源"
+    query_key = "b，清华，*，人机交互"
     matched_keys = key_match(query_key, teacher_info.keys())
     result = search_based_on_query(query_key, teacher_info)
     if result == kInputError:
@@ -108,6 +131,8 @@ if __name__ == '__main__':
         print(f"No College is Founded! Please Check the Input College!")
     elif result == kNoTeacher:
         print(f"No Teacher is Founded! Please Check the Input Teacher!")
+    elif result == kNoMajor:
+        print(f"No Major is Founded! Please Check the Input Major!")
     else:
         teacher_list = result.keys()
         for teacher in teacher_list:
