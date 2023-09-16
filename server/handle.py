@@ -56,7 +56,7 @@ class Handle(object):
         try:
             webData = web.data()
             print(f"Handle Post webdata is {webData}")
-            #后台打日志
+            # 后台打日志
             recMsg = receive.parse_xml(webData)
             if isinstance(recMsg, receive.Msg) and recMsg.MsgType == 'text':
                 toUser = recMsg.FromUserName
@@ -66,6 +66,13 @@ class Handle(object):
                 print(f"<----------content: {content}")
                 replyMsg = reply.TextMsg(toUser, fromUser, content)
                 return replyMsg.send()
+            elif isinstance(recMsg, receive.EventMsg):
+                toUser = recMsg.FromUserName
+                fromUser = recMsg.ToUserName
+                if recMsg.Event == 'subscribe':
+                    content = "支持两种输入格式：\n  a，大学名称，院系名称，老师名称 \n  b，大学名称，院系名称，研究方向 \n不确定的可以用\'*\'代替\n例如：\'b，清华，人工智能，*\'"
+                    replyMsg = reply.TextMsg(toUser, fromUser, content)
+                    return replyMsg.send()
             else:
                 print("暂且不处理")
                 return "success"

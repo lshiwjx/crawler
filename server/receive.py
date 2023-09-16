@@ -15,7 +15,56 @@ def parse_xml(web_data):
         return TextMsg(xmlData)
     elif msg_type == 'image':
         return ImageMsg(xmlData)
+    elif msg_type == 'event':
+        event_type = xmlData.find('Event').text
+        if event_type == 'CLICK':
+            return Click(xmlData)
+        elif event_type in ('subscribe', 'unsubscribe'):
+            return Subscribe(xmlData)
+        elif event_type == 'VIEW':
+            return View(xmlData)
+        elif event_type == 'LOCATION':
+            return LocationEvent(xmlData)
+        elif event_type == 'SCAN':
+            return Scan(xmlData)
 
+class EventMsg(object):
+    def __init__(self, xmlData):
+        self.ToUserName = xmlData.find('ToUserName').text
+        self.FromUserName = xmlData.find('FromUserName').text
+        self.CreateTime = xmlData.find('CreateTime').text
+        self.MsgType = xmlData.find('MsgType').text
+        self.Event = xmlData.find('Event').text
+
+
+class Click(EventMsg):
+    def __init__(self, xmlData):
+        EventMsg.__init__(self, xmlData)
+        self.Eventkey = xmlData.find('EventKey').text
+
+
+class Subscribe(EventMsg):
+    def __init__(self, xmlData):
+        EventMsg.__init__(self, xmlData)
+        self.Eventkey = xmlData.find('EventKey').text
+
+
+class View(EventMsg):
+    def __init__(self, xmlData):
+        EventMsg.__init__(self, xmlData)
+        self.Eventkey = xmlData.find('EventKey').text
+
+
+class LocationEvent(EventMsg):
+    def __init__(self, xmlData):
+        EventMsg.__init__(self, xmlData)
+        self.Eventkey = xmlData.find('EventKey').text
+
+
+class Scan(EventMsg):
+    def __init__(self, xmlData):
+        EventMsg.__init__(self, xmlData)
+        self.Eventkey = xmlData.find('EventKey').text
 
 class Msg(object):
     def __init__(self, xmlData):
