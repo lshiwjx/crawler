@@ -29,6 +29,7 @@ class Handle(object):
     def GET(self):
         try:
             data = web.input()
+            print(data)
             if len(data) == 0:
                 return "hello, this is handle view"
             signature = data.signature
