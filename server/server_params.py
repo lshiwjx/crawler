@@ -7,9 +7,6 @@ kNoTeacher = 2
 kInputError = 3
 kNoMajor = 4
 
-kUniversityCollegeTeacherMode = 'a'
-kUniversityCollegeMajorMode = 'b'
-
 KMaxNumTeacherDisplay = 3
 
 # 定义关心的字段

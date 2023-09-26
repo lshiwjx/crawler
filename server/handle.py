@@ -71,7 +71,7 @@ class Handle(object):
                 toUser = recMsg.FromUserName
                 fromUser = recMsg.ToUserName
                 if recMsg.Event == 'subscribe':
-                    content = "支持两种输入格式：\n  a，大学名称，院系名称，老师名称 \n  b，大学名称，院系名称，研究方向 \n不确定的可以用\'*\'代替\n例如：\'b，清华，人工智能，*\'"
+                    content = "输入格式为：\n 大学名称，院系名称，老师名称，研究方向 \n不确定的可以用\'*\'代替\n例如：\'清华，计算机系，*，人工智能\'"
                     replyMsg = reply.TextMsg(toUser, fromUser, content)
                     return replyMsg.send()
             else:
@@ -83,7 +83,7 @@ class Handle(object):
     def analyze_result(self, query_key):
         result = search_based_on_query(query_key, self._teacher_info)
         if result == kInputError:
-            return "请输入正确的格式：\'模式，大学名称，院系名称，老师名称/研究方向\'! 不确定的部分可以使用\'*\'代替！\n其中模式\'a\'代表老师名称，\'b\'代表研究方向，如：\'a，清华，*，邱勇\' 或者 \'b，清华，*，人工智能\'"
+            return "请输入正确的格式：\'模式，大学名称，院系名称，老师名称，研究方向\'! 不确定的部分可以使用\'*\'代替！如：\'清华，*，邱勇，人工智能\'"
         elif result == kNoUniversity:
             return "没找到此大学，请检查大学名称是否正确!"
         elif result == kNoCollege:

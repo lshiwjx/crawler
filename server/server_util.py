@@ -41,9 +41,9 @@ def key_match(query_key, key_list, cutoff=0.0):
     return matched_keys
 
 def search_based_on_query(query_key, teacher_info):
-    # Format: "mode, university，college，teacher_name", "*" can be used to represent all.
+    # Format: "university，college，teacher_name，major", "*" can be used to represent all.
     try:
-        mode, university_name, college_name, search_key = re.split('、|，|,| ', query_key)
+        university_name, college_name, teacher_name, major = re.split('、|，|,| ', query_key)
     except:
         return kInputError
     university_list = teacher_info.keys()
@@ -52,15 +52,13 @@ def search_based_on_query(query_key, teacher_info):
         university_list = key_match(university_name, university_list, 0.2)
         if len(university_list) == 0:
             return kNoUniversity
-    if mode == kUniversityCollegeMajorMode and '*' in search_key:
-        return kNoMajor
 
     output_str = ''
-    if '*' in college_name and '*' in search_key:
+    if '*' in college_name and '*' in teacher_name and '*' in major:
         for university_name in university_list:
             output_str += university_name + '\n' + kUniversityUrl[university_name] + '\n' + '----------'
         return output_str
-    elif '*' not in college_name and '*' in search_key:
+    elif '*' not in college_name and '*' in teacher_name and '*' in major:
         for university_name in university_list:
             college = teacher_info[university_name]
             college_list = college.keys()
@@ -79,10 +77,10 @@ def search_based_on_query(query_key, teacher_info):
             if len(college_list) == 0:
                 return kNoCollege
         for college_candidate in college_list:
-            if mode == kUniversityCollegeTeacherMode:
-                return search_teacher_name(university_candidate, college_candidate, search_key, teacher_info)
-            elif mode == kUniversityCollegeMajorMode:
-                return search_major_research(university_candidate, college_candidate, search_key, teacher_info)
+            if '*' not in teacher_name:
+                return search_teacher_name(university_candidate, college_candidate, teacher_name, teacher_info)
+            elif '*' not in major:
+                return search_major_research(university_candidate, college_candidate, major, teacher_info)
             else:
                 return kInputError
                 
@@ -120,11 +118,11 @@ def search_major_research(university_candidate, college_candidate, search_key, t
 if __name__ == '__main__':
     path_list = traverse_dir("./teacher_info")
     teacher_info = load_xls_data(path_list)
-    query_key = "b，清华，*，人机交互"
+    query_key = "清华，*，*,人机交互"
     matched_keys = key_match(query_key, teacher_info.keys())
     result = search_based_on_query(query_key, teacher_info)
     if result == kInputError:
-        print(f"Please Give Right Input: University,College,Teacher!")
+        print(f"Please Give Right Input: University,College,Teacher,Major!")
     elif result == kNoUniversity:
         print(f"No University is Founded! Please Check the Input University!")
     elif result == kNoCollege:
